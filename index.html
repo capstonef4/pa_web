@@ -800,131 +800,148 @@
 
 </div><!-- /page-wrap -->
 
-<script>
-  const FOODS = [
-    { id: '1', name: '한우구이' },
-    { id: '2', name: '스테이크 & 파스타' },
-    { id: '3', name: '한식' },
-    { id: '4', name: '중식' }
-  ];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-analytics.js";
+import { getFirestore, addDoc, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-firestore.js";
 
-  let selected = [];
+const firebaseConfig = {
+  apiKey: "AIzaSyBM4GLPI_dGSHbzsg6IAdfDhJZZlR8wYUY",
+  authDomain: "paweb-ddf6a.firebaseapp.com",
+  projectId: "paweb-ddf6a",
+  storageBucket: "paweb-ddf6a.firebasestorage.app",
+  messagingSenderId: "1010377579924",
+  appId: "1:1010377579924:web:b626e171a10ae5ba2ec381",
+  measurementId: "G-5D712S9JC7"
+};
 
-  function toggleCard(card) {
-    if (card.classList.contains('disabled-card')) return;
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+// 🔥 이거 추가
+const db = getFirestore(app);
+
+const FOODS = [
+  { id: '1', name: '한우구이' },
+  { id: '2', name: '스테이크 & 파스타' },
+  { id: '3', name: '한식' },
+  { id: '4', name: '중식' }
+];
+
+let selected = [];
+
+window.toggleCard = function(card) {
+  if (card.classList.contains('disabled-card')) return;
+  const id = card.dataset.id;
+
+  if (card.classList.contains('selected')) {
+    card.classList.remove('selected');
+    selected = selected.filter(s => s !== id);
+  } else {
+    if (selected.length >= 2) return;
+    card.classList.add('selected');
+    selected.push(id);
+  }
+
+  updateUI();
+}
+
+function updateUI() {
+  document.getElementById('count-text').textContent = selected.length;
+  document.getElementById('submit-btn').disabled = selected.length !== 2;
+
+  document.querySelectorAll('.food-card').forEach(card => {
     const id = card.dataset.id;
-
-    if (card.classList.contains('selected')) {
-      card.classList.remove('selected');
-      selected = selected.filter(s => s !== id);
+    if (selected.length >= 2 && !selected.includes(id)) {
+      card.classList.add('disabled-card');
     } else {
-      if (selected.length >= 2) return;
-      card.classList.add('selected');
-      selected.push(id);
+      card.classList.remove('disabled-card');
     }
+  });
+}
 
-    updateUI();
+window.submitSurvey = async function() {
+  if (selected.length !== 2) return;
+
+  const names = selected.map(id => FOODS.find(f => f.id === id).name);
+
+  // 🔥 Firebase 저장
+  await addDoc(collection(db, "responses"), {
+    timestamp: new Date().toLocaleString('ko-KR'),
+    choices: names,
+    choiceIds: selected
+  });
+
+  const display = document.getElementById('chosen-display');
+  display.innerHTML = names.map(n => '<div class="chosen-tag">' + n + '</div>').join('');
+
+  document.getElementById('survey-screen').style.display = 'none';
+  document.getElementById('main-footer').style.display = 'none';
+  document.getElementById('success-screen').style.display = 'block';
+}
+
+async function renderAdmin() {
+  const querySnapshot = await getDocs(collection(db, "responses"));
+  const responses = [];
+  querySnapshot.forEach(d => responses.push({ id: d.id, ...d.data() }));
+
+  const counts = {};
+  FOODS.forEach(f => counts[f.name] = 0);
+  responses.forEach(r => r.choices.forEach(c => counts[c]++));
+
+  const maxCount = Math.max(...Object.values(counts), 1);
+
+  document.getElementById('stats-grid').innerHTML = FOODS.map(f => {
+    const cnt = counts[f.name];
+    const pct = Math.round((cnt / maxCount) * 100);
+    return `
+      <div class="stat-item">
+        <div class="stat-food">${f.name}</div>
+        <div class="stat-bar-bg"><div class="stat-bar" style="width:${pct}%"></div></div>
+        <div class="stat-count">${cnt}표</div>
+      </div>
+    `;
+  }).join('');
+
+  const list = document.getElementById('responses-list');
+  if (responses.length === 0) {
+    list.innerHTML = '<div class="no-responses">아직 없음</div>';
+  } else {
+    list.innerHTML = responses.map((r, i) => `
+      <div class="response-item">
+        <div class="response-who">응답 ${i+1}<br><small>${r.timestamp}</small></div>
+        <div class="response-choices">
+          ${r.choices.map(c => `<span class="response-tag">${c}</span>`).join('')}
+        </div>
+      </div>
+    `).join('');
   }
+}
 
-  function updateUI() {
-    document.getElementById('count-text').textContent = selected.length;
-    document.getElementById('submit-btn').disabled = selected.length !== 2;
-
-    document.querySelectorAll('.food-card').forEach(card => {
-      const id = card.dataset.id;
-      if (selected.length >= 2 && !selected.includes(id)) {
-        card.classList.add('disabled-card');
-      } else {
-        card.classList.remove('disabled-card');
-      }
-    });
+window.clearData = async function() {
+  const querySnapshot = await getDocs(collection(db, "responses"));
+  for (const d of querySnapshot.docs) {
+    await deleteDoc(doc(db, "responses", d.id));
   }
+  renderAdmin();
+}
 
-  function submitSurvey() {
-    if (selected.length !== 2) return;
+window.goBack = function() {
+  window.location.hash = '';
+  location.reload();
+}
 
-    const names = selected.map(id => FOODS.find(f => f.id === id).name);
-
-    // Save to localStorage
-    const existing = JSON.parse(localStorage.getItem('survey_responses') || '[]');
-    existing.push({
-      timestamp: new Date().toLocaleString('ko-KR'),
-      choices: names,
-      choiceIds: selected
-    });
-    localStorage.setItem('survey_responses', JSON.stringify(existing));
-
-    // Show chosen items
-    const display = document.getElementById('chosen-display');
-    display.innerHTML = names.map(n => '<div class="chosen-tag">' + n + '</div>').join('');
-
-    // Transition
+function init() {
+  if (window.location.hash === '#admin') {
     document.getElementById('survey-screen').style.display = 'none';
     document.getElementById('main-footer').style.display = 'none';
-    const ss = document.getElementById('success-screen');
-    ss.style.display = 'block';
+    document.getElementById('admin-screen').style.display = 'block';
+    renderAdmin();
   }
+}
 
-  function renderAdmin() {
-    const responses = JSON.parse(localStorage.getItem('survey_responses') || '[]');
+window.addEventListener('load', init);
+window.addEventListener('hashchange', init);
 
-    // Stats
-    const counts = {};
-    FOODS.forEach(f => counts[f.name] = 0);
-    responses.forEach(r => r.choices.forEach(c => { if (counts[c] !== undefined) counts[c]++; }));
-    const maxCount = Math.max(...Object.values(counts), 1);
-
-    const statsGrid = document.getElementById('stats-grid');
-    statsGrid.innerHTML = FOODS.map(f => {
-      const cnt = counts[f.name] || 0;
-      const pct = Math.round((cnt / maxCount) * 100);
-      return '<div class="stat-item">' +
-        '<div class="stat-food">' + f.name + '</div>' +
-        '<div class="stat-bar-bg"><div class="stat-bar" style="width:' + pct + '%"></div></div>' +
-        '<div class="stat-count">' + cnt + '표</div>' +
-        '</div>';
-    }).join('');
-
-    // Responses list
-    const list = document.getElementById('responses-list');
-    if (responses.length === 0) {
-      list.innerHTML = '<div class="no-responses">아직 제출된 응답이 없습니다.</div>';
-    } else {
-      list.innerHTML = responses.map((r, i) => {
-        return '<div class="response-item">' +
-          '<div class="response-who">응답 ' + (i + 1) + '<br><small>' + r.timestamp + '</small></div>' +
-          '<div class="response-choices">' +
-            r.choices.map(c => '<span class="response-tag">' + c + '</span>').join('') +
-          '</div></div>';
-      }).join('');
-    }
-  }
-
-  function clearData() {
-    if (confirm('모든 응답 데이터를 삭제하시겠습니까?')) {
-      localStorage.removeItem('survey_responses');
-      renderAdmin();
-    }
-  }
-
-  function goBack() {
-    window.location.hash = '';
-    location.reload();
-  }
-
-  // Route based on hash
-  function init() {
-    if (window.location.hash === '#admin') {
-      document.getElementById('survey-screen').style.display = 'none';
-      document.getElementById('main-footer').style.display = 'none';
-      document.getElementById('admin-screen').style.display = 'block';
-      renderAdmin();
-    }
-  }
-
-  window.addEventListener('load', init);
-  window.addEventListener('hashchange', init);
-</script>
-
-</body>
+</script></body>
 </html>
