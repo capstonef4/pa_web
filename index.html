@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>어버이날 저녁식사 선호도 조사</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #c9943a;
+      --gold-light: #e8bb6a;
+      --gold-pale: #f5e6c8;
+      --cream: #fdf8f0;
+      --warm-dark: #2c1f0e;
+      --warm-mid: #5c3d1e;
+      --warm-soft: #8b6340;
+      --accent-red: #c0392b;
+      --card-shadow: 0 8px 32px rgba(44,31,14,0.13);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', sans-serif;
+      background-color: var(--cream);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ---- BACKGROUND DECORATION ---- */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 10% 10%, rgba(201,148,58,0.10) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 50% at 90% 85%, rgba(201,148,58,0.08) 0%, transparent 55%),
+        repeating-linear-gradient(
+          135deg,
+          transparent,
+          transparent 60px,
+          rgba(201,148,58,0.025) 60px,
+          rgba(201,148,58,0.025) 61px
+        );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .page-wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    /* ---- HEADER ---- */
+    .header {
+      text-align: center;
+      margin-bottom: 48px;
+      animation: fadeDown 0.8s ease both;
+    }
+
+    .header-badge {
+      display: inline-block;
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 13px;
+      letter-spacing: 0.18em;
+      color: var(--gold);
+      border: 1.5px solid var(--gold-light);
+      padding: 6px 22px;
+      border-radius: 100px;
+      margin-bottom: 22px;
+      background: rgba(232,187,106,0.08);
+    }
+
+    .flower-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .flower-divider::before,
+    .flower-divider::after {
+      content: '';
+      display: block;
+      width: 60px;
+      height: 1.5px;
+      background: linear-gradient(to right, transparent, var(--gold-light));
+    }
+    .flower-divider::after {
+      background: linear-gradient(to left, transparent, var(--gold-light));
+    }
+
+    .carnation-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    h1 {
+      font-family: 'Nanum Myeongjo', serif;
+      font-weight: 800;
+      font-size: clamp(26px, 6vw, 36px);
+      color: var(--warm-dark)(--gold);
+
+      line-height: 1.35;
+      letter-spacing: -0.01em;
+      margin-bottom: 14px;
+    }
+
+    h1 span {
+      color: var(--gold);
+
+      }
+
+    .subtitle {
+      font-size: 15px;
+      color: var(--warm-soft);
+      line-height: 1.7;
+      font-weight: 300;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    /* ---- INSTRUCTION ---- */
+    .instruction {
+      background: linear-gradient(135deg, rgba(201,148,58,0.10), rgba(245,230,200,0.5));
+      border: 1.5px solid var(--gold-light);
+      border-radius: 14px;
+      padding: 16px 22px;
+      margin-bottom: 32px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      animation: fadeUp 0.8s 0.2s ease both;
+    }
+
+    .instruction-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .instruction-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: white;
+    }
+
+    .instruction p {
+      font-size: 14px;
+      color: var(--warm-mid);
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    .instruction strong {
+      color: var(--gold);
+      font-weight: 700;
+    }
+
+    /* ---- CARDS ---- */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 36px;
+    }
+
+    @media (max-width: 480px) {
+      .cards-grid { grid-template-columns: 1fr; }
+    }
+
+    .food-card {
+      background: white;
+      border: 2px solid rgba(201,148,58,0.18);
+      border-radius: 20px;
+      padding: 28px 22px 24px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: var(--card-shadow);
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.7s ease both;
+      user-select: none;
+    }
+
+    .food-card:nth-child(1) { animation-delay: 0.25s; }
+    .food-card:nth-child(2) { animation-delay: 0.35s; }
+    .food-card:nth-child(3) { animation-delay: 0.45s; }
+    .food-card:nth-child(4) { animation-delay: 0.55s; }
+
+    .food-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--gold-light), var(--gold));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .food-card:hover {
+      transform: translateY(-5px) scale(1.02);
+      border-color: var(--gold-light);
+      box-shadow: 0 16px 40px rgba(201,148,58,0.22);
+    }
+
+    .food-card.selected {
+      border-color: var(--gold);
+      background: linear-gradient(145deg, #fffbf3, #fff9ee);
+      transform: translateY(-4px) scale(1.015);
+      box-shadow: 0 12px 40px rgba(201,148,58,0.28);
+    }
+
+    .food-card.selected::before {
+      opacity: 1;
+    }
+
+    .food-card.disabled-card {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .food-card.disabled-card:hover {
+      transform: none;
+      box-shadow: var(--card-shadow);
+      border-color: rgba(201,148,58,0.18);
+    }
+
+    .card-num {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 12px;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    .card-icon-wrap {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      background: var(--gold-pale);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      transition: background 0.3s;
+    }
+
+    .food-card.selected .card-icon-wrap {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    }
+
+    .card-icon-wrap svg {
+      width: 30px;
+      height: 30px;
+    }
+
+    .food-card.selected .card-icon-wrap svg path,
+    .food-card.selected .card-icon-wrap svg circle,
+    .food-card.selected .card-icon-wrap svg rect,
+    .food-card.selected .card-icon-wrap svg ellipse {
+      stroke: white !important;
+    }
+
+    .card-title {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--warm-dark);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .card-desc {
+      font-size: 12.5px;
+      color: var(--warm-soft);
+      line-height: 1.55;
+      font-weight: 300;
+    }
+
+    .check-badge {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0) rotate(-45deg);
+      transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .food-card.selected .check-badge {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+
+    .check-badge svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    /* ---- SUBMIT ---- */
+    .submit-wrap {
+      text-align: center;
+      animation: fadeUp 0.8s 0.6s ease both;
+    }
+
+    .submit-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: white;
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 18px 60px;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(201,148,58,0.38);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .submit-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 14px 36px rgba(201,148,58,0.50);
+    }
+
+    .submit-btn:hover::after { opacity: 1; }
+
+    .submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .submit-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .select-count {
+      margin-top: 14px;
+      font-size: 13px;
+      color: var(--warm-soft);
+    }
+
+    .select-count span {
+      font-weight: 700;
+      color: var(--gold);
+    }
+
+    /* ---- SUCCESS ---- */
+    #success-screen {
+      display: none;
+      text-align: center;
+      animation: fadeUp 0.7s ease both;
+    }
+
+    .success-heart {
+      width: 90px;
+      height: 90px;
+      background: linear-gradient(135deg, #e74c3c, #c0392b);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      box-shadow: 0 10px 30px rgba(192,57,43,0.3);
+      animation: heartPulse 1.5s ease infinite;
+    }
+
+    .success-heart svg {
+      width: 42px;
+      height: 42px;
+    }
+
+    .success-title {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--warm-dark);
+      margin-bottom: 12px;
+    }
+
+    .success-msg {
+      font-size: 15px;
+      color: var(--warm-soft);
+      line-height: 1.7;
+      max-width: 360px;
+      margin: 0 auto 28px;
+    }
+
+    .chosen-display {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .chosen-tag {
+      background: linear-gradient(135deg, var(--gold-pale), #fff);
+      border: 1.5px solid var(--gold-light);
+      color: var(--warm-dark);
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 15px;
+      font-weight: 700;
+      padding: 10px 24px;
+      border-radius: 100px;
+      box-shadow: 0 4px 12px rgba(201,148,58,0.15);
+    }
+
+    /* ---- ADMIN PANEL ---- */
+    #admin-screen {
+      display: none;
+    }
+
+    .admin-header {
+      text-align: center;
+      margin-bottom: 36px;
+      animation: fadeDown 0.7s ease both;
+    }
+
+    .admin-title {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--warm-dark);
+      margin-bottom: 8px;
+    }
+
+    .admin-sub {
+      font-size: 14px;
+      color: var(--warm-soft);
+    }
+
+    .admin-card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: var(--card-shadow);
+      border: 1.5px solid rgba(201,148,58,0.15);
+      margin-bottom: 20px;
+      animation: fadeUp 0.7s 0.2s ease both;
+    }
+
+    .admin-card-title {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--warm-mid);
+      letter-spacing: 0.05em;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid var(--gold-pale);
+    }
+
+    .response-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      background: var(--cream);
+      border-radius: 12px;
+      margin-bottom: 10px;
+    }
+
+    .response-who {
+      font-size: 14px;
+      color: var(--warm-soft);
+      font-weight: 300;
+    }
+
+    .response-choices {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .response-tag {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'Nanum Myeongjo', serif;
+      padding: 5px 14px;
+      border-radius: 100px;
+    }
+
+    .no-responses {
+      text-align: center;
+      padding: 30px 0;
+      color: var(--warm-soft);
+      font-size: 14px;
+    }
+
+    .admin-clear-btn {
+      background: none;
+      border: 1.5px solid #e0d0c0;
+      color: var(--warm-soft);
+      font-size: 13px;
+      padding: 10px 24px;
+      border-radius: 100px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .admin-clear-btn:hover {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    .admin-back-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      color: white;
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px 44px;
+      border: none;
+      border-radius: 100px;
+      cursor: pointer;
+      box-shadow: 0 6px 20px rgba(201,148,58,0.35);
+      transition: all 0.3s ease;
+      margin-top: 16px;
+    }
+
+    .admin-back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(201,148,58,0.45);
+    }
+
+    /* stats */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-item {
+      background: var(--cream);
+      border-radius: 12px;
+      padding: 16px 18px;
+    }
+
+    .stat-food {
+      font-family: 'Nanum Myeongjo', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--warm-dark);
+      margin-bottom: 8px;
+    }
+
+    .stat-bar-bg {
+      height: 6px;
+      background: var(--gold-pale);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .stat-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--gold-light), var(--gold));
+      border-radius: 100px;
+      transition: width 1s cubic-bezier(0.34, 1.1, 0.64, 1);
+    }
+
+    .stat-count {
+      font-size: 12px;
+      color: var(--warm-soft);
+      margin-top: 5px;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      text-align: center;
+      padding-top: 48px;
+      font-size: 12px;
+      color: #c8b49a;
+      letter-spacing: 0.06em;
+      animation: fadeUp 0.8s 0.7s ease both;
+    }
+
+    /* ---- ANIMATIONS ---- */
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes heartPulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.07); }
+    }
+
+    @keyframes shimmer {
+      0% { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- ===== SURVEY SCREEN ===== -->
+  <div id="survey-screen">
+
+    <div class="header">
+      <div class="header-badge">Parents Day 2026</div>
+      <div class="flower-divider">
+        <!-- Carnation SVG -->
+        <svg class="carnation-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 28 C16 28 8 22 8 16 C8 11 11 8 16 8 C21 8 24 11 24 16 C24 22 16 28 16 28Z" fill="#e8bb6a" opacity="0.4"/>
+          <path d="M16 8 C16 8 12 4 13 2 C14 4 16 3 16 3 C16 3 18 4 19 2 C20 4 16 8 16 8Z" fill="#c9943a"/>
+          <path d="M10 14 C8 12 9 9 11 10 C10 12 12 13 12 13" stroke="#c9943a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M22 14 C24 12 23 9 21 10 C22 12 20 13 20 13" stroke="#c9943a" stroke-width="1.2" stroke-linecap="round"/>
+          <path d="M16 28 L16 10" stroke="#6a9e5a" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M16 20 Q19 18 21 19" stroke="#6a9e5a" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </div>
+      <h1>민지 아빠 <span>'강남구'</span>,<br>민지 엄마 <span>'이진희'</span>를 위한<br><span>어버이날 저녁식사<br></span>선호도 조사</h1>
+      <p class="subtitle">소중한 부모님을 위해 준비했습니다.<br>아래 메뉴 중 <strong>마음에 드는 2가지</strong>를 골라 주세요.</p>
+    </div>
+
+    <div class="instruction">
+      <div class="instruction-icon">
+        <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      </div>
+      <p><strong>2가지를 선택</strong>해 주세요. 선택 후 하단의 제출 버튼을 눌러 주시면 됩니다.</p>
+    </div>
+
+    <div class="cards-grid">
+
+      <!-- Card 1: Korean BBQ -->
+      <div class="food-card" data-id="1" data-name="한우 구이" onclick="toggleCard(this)">
+        <div class="card-num">No. 01</div>
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 30 30" fill="none" stroke="#c9943a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="15" cy="22" rx="11" ry="3"/>
+            <path d="M8 22 C8 18 7 14 10 11 C12 9 15 10 15 10 C15 10 18 9 20 11 C23 14 22 18 22 22"/>
+            <path d="M11 10 C11 7 13 5 15 4 C17 5 19 7 19 10"/>
+            <path d="M9 16 Q11 14 13 16"/>
+            <path d="M17 16 Q19 14 21 16"/>
+          </svg>
+        </div>
+        <div class="card-title">한우 구이</div>
+         <div class="card-desc">입에서 살살녹는 한우 구워먹기</div>
+           <div class="check-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Card 2: Steak & Pasta -->
+      <div class="food-card" data-id="2" data-name="스테이크 & 파스타" onclick="toggleCard(this)">
+        <div class="card-num">No. 02</div>
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 30 30" fill="none" stroke="#c9943a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 25 L25 25"/>
+            <path d="M8 25 C8 20 10 17 15 16 C20 17 22 20 22 25"/>
+            <path d="M10 16 C10 12 12 10 15 10 C18 10 20 12 20 16"/>
+            <path d="M13 10 L13 6"/>
+            <path d="M15 9 L15 5"/>
+            <path d="M17 10 L17 6"/>
+            <circle cx="22" cy="9" r="3"/>
+            <path d="M22 12 L22 25"/>
+          </svg>
+        </div>
+        <div class="card-title">스테이크 &amp;파스타</div>
+         <div class="card-desc">고급 레스토랑에서 스테이크 썰기 </div>
+          <div class="check-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Card 3: Korean Food -->
+      <div class="food-card" data-id="3" data-name="한식" onclick="toggleCard(this)">
+        <div class="card-num">No. 03</div>
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 30 30" fill="none" stroke="#c9943a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <ellipse cx="15" cy="18" rx="10" ry="5"/>
+            <path d="M5 18 C5 18 4 12 8 10 C11 8 15 9 15 9 C15 9 19 8 22 10 C26 12 25 18 25 18"/>
+            <path d="M9 13 Q12 11 15 13 Q18 11 21 13"/>
+            <path d="M15 9 L15 5"/>
+            <path d="M12 7 L15 5 L18 7"/>
+          </svg>
+        </div>
+        <div class="card-title">한 식</div>
+        <div class="card-desc">ex)갈비찜,생선,쭈꾸미,불고기 등 </div>
+        <div class="check-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
+
+      <!-- Card 4: Chinese Food -->
+      <div class="food-card" data-id="4" data-name="중식" onclick="toggleCard(this)">
+        <div class="card-num">No. 04</div>
+        <div class="card-icon-wrap">
+          <svg viewBox="0 0 30 30" fill="none" stroke="#c9943a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 24 L24 24"/>
+            <path d="M10 24 L10 16 Q10 10 15 10 Q20 10 20 16 L20 24"/>
+            <path d="M10 18 L20 18"/>
+            <path d="M10 21 L20 21"/>
+            <path d="M12 10 Q12 6 15 5 Q18 6 18 10"/>
+            <circle cx="15" cy="5" r="1.2" fill="#c9943a" stroke="none"/>
+          </svg>
+        </div>
+        <div class="card-title">중 식</div>
+        <div class="card-desc">다양한 중국요리 즐기기</div>
+        <div class="check-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg>
+        </div>
+      </div>
+
+    </div><!-- /cards-grid -->
+
+    <div class="submit-wrap">
+      <button class="submit-btn" id="submit-btn" disabled onclick="submitSurvey()">제출하기</button>
+      <p class="select-count"><span id="count-text">0</span> / 2 개 선택됨</p>
+    </div>
+
+  </div><!-- /survey-screen -->
+
+  <!-- ===== SUCCESS SCREEN ===== -->
+  <div id="success-screen">
+    <div class="success-heart">
+      <svg viewBox="0 0 24 24" fill="white"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    </div>
+    <h2 class="success-title">감사합니다!</h2>
+    <p class="success-msg">소중한 의견 잘 접수되었습니다.<br>맛있는 저녁식사 기대해 주세요!</p>
+    <div class="chosen-display" id="chosen-display"></div>
+  </div>
+
+  <!-- ===== ADMIN SCREEN ===== -->
+  <div id="admin-screen">
+    <div class="admin-header">
+      <p class="admin-sub">PARENTS DAY SURVEY</p>
+      <h2 class="admin-title">제출 결과 확인</h2>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-title">항목별 선택 현황</div>
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+
+    <div class="admin-card">
+      <div class="admin-card-title">제출 내역</div>
+      <div id="responses-list"></div>
+      <div style="text-align:right; margin-top: 8px;">
+        <button class="admin-clear-btn" onclick="clearData()">전체 초기화</button>
+      </div>
+    </div>
+
+    <div style="text-align:center;">
+      <button class="admin-back-btn" onclick="goBack()">설문 화면으로 돌아가기</button>
+    </div>
+  </div>
+
+  <div class="footer" id="main-footer">
+    <p>Parents Day 2026 &nbsp;|&nbsp; Made by MJ</p>
+  </div>
+
+</div><!-- /page-wrap -->
+
+<script>
+  const FOODS = [
+    { id: '1', name: '한우구이' },
+    { id: '2', name: '스테이크 & 파스타' },
+    { id: '3', name: '한식' },
+    { id: '4', name: '중식' }
+  ];
+
+  let selected = [];
+
+  function toggleCard(card) {
+    if (card.classList.contains('disabled-card')) return;
+    const id = card.dataset.id;
+
+    if (card.classList.contains('selected')) {
+      card.classList.remove('selected');
+      selected = selected.filter(s => s !== id);
+    } else {
+      if (selected.length >= 2) return;
+      card.classList.add('selected');
+      selected.push(id);
+    }
+
+    updateUI();
+  }
+
+  function updateUI() {
+    document.getElementById('count-text').textContent = selected.length;
+    document.getElementById('submit-btn').disabled = selected.length !== 2;
+
+    document.querySelectorAll('.food-card').forEach(card => {
+      const id = card.dataset.id;
+      if (selected.length >= 2 && !selected.includes(id)) {
+        card.classList.add('disabled-card');
+      } else {
+        card.classList.remove('disabled-card');
+      }
+    });
+  }
+
+  function submitSurvey() {
+    if (selected.length !== 2) return;
+
+    const names = selected.map(id => FOODS.find(f => f.id === id).name);
+
+    // Save to localStorage
+    const existing = JSON.parse(localStorage.getItem('survey_responses') || '[]');
+    existing.push({
+      timestamp: new Date().toLocaleString('ko-KR'),
+      choices: names,
+      choiceIds: selected
+    });
+    localStorage.setItem('survey_responses', JSON.stringify(existing));
+
+    // Show chosen items
+    const display = document.getElementById('chosen-display');
+    display.innerHTML = names.map(n => '<div class="chosen-tag">' + n + '</div>').join('');
+
+    // Transition
+    document.getElementById('survey-screen').style.display = 'none';
+    document.getElementById('main-footer').style.display = 'none';
+    const ss = document.getElementById('success-screen');
+    ss.style.display = 'block';
+  }
+
+  function renderAdmin() {
+    const responses = JSON.parse(localStorage.getItem('survey_responses') || '[]');
+
+    // Stats
+    const counts = {};
+    FOODS.forEach(f => counts[f.name] = 0);
+    responses.forEach(r => r.choices.forEach(c => { if (counts[c] !== undefined) counts[c]++; }));
+    const maxCount = Math.max(...Object.values(counts), 1);
+
+    const statsGrid = document.getElementById('stats-grid');
+    statsGrid.innerHTML = FOODS.map(f => {
+      const cnt = counts[f.name] || 0;
+      const pct = Math.round((cnt / maxCount) * 100);
+      return '<div class="stat-item">' +
+        '<div class="stat-food">' + f.name + '</div>' +
+        '<div class="stat-bar-bg"><div class="stat-bar" style="width:' + pct + '%"></div></div>' +
+        '<div class="stat-count">' + cnt + '표</div>' +
+        '</div>';
+    }).join('');
+
+    // Responses list
+    const list = document.getElementById('responses-list');
+    if (responses.length === 0) {
+      list.innerHTML = '<div class="no-responses">아직 제출된 응답이 없습니다.</div>';
+    } else {
+      list.innerHTML = responses.map((r, i) => {
+        return '<div class="response-item">' +
+          '<div class="response-who">응답 ' + (i + 1) + '<br><small>' + r.timestamp + '</small></div>' +
+          '<div class="response-choices">' +
+            r.choices.map(c => '<span class="response-tag">' + c + '</span>').join('') +
+          '</div></div>';
+      }).join('');
+    }
+  }
+
+  function clearData() {
+    if (confirm('모든 응답 데이터를 삭제하시겠습니까?')) {
+      localStorage.removeItem('survey_responses');
+      renderAdmin();
+    }
+  }
+
+  function goBack() {
+    window.location.hash = '';
+    location.reload();
+  }
+
+  // Route based on hash
+  function init() {
+    if (window.location.hash === '#admin') {
+      document.getElementById('survey-screen').style.display = 'none';
+      document.getElementById('main-footer').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      renderAdmin();
+    }
+  }
+
+  window.addEventListener('load', init);
+  window.addEventListener('hashchange', init);
+</script>
+
+</body>
+</html>
